@@ -108,54 +108,111 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void post(String first, String last, String ID){
-        // Make new json object and put params in it
-        JSONObject jsonParams = new JSONObject();
-        try {
-            jsonParams.put("id", Integer.parseInt(ID));
-            jsonParams.put("forename", first);
-            jsonParams.put("surname", last);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        new Thread(new Runnable() {
+            public void run() {
+                // Make new json object and put params in it
+                JSONObject jsonParams = new JSONObject();
+                try {
+                    jsonParams.put("id", Integer.parseInt(ID));
+                    jsonParams.put("forename", first);
+                    jsonParams.put("surname", last);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
-        System.out.println(jsonParams);
+                System.out.println(jsonParams);
 
-
-        // Building a request
-        JsonObjectRequest request = new JsonObjectRequest(JsonRequest.Method.POST, url, jsonParams, new Response.Listener<JSONObject>() {
+                JsonObjectRequest request = new JsonObjectRequest(JsonRequest.Method.POST, url, jsonParams, new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         System.out.println(response);
                     }
                 },
 
-                new Response.ErrorListener(){
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        System.out.println(error.toString());
-                    }
-                });
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                System.out.println(error.toString());
+                            }
+                        });
 
-            /*
-
-              For the sake of the example I've called newRequestQueue(getApplicationContext()) here
-              but the recommended way is to create a singleton that will handle this.
-
-              Read more at : https://developer.android.com/training/volley/requestqueue
-
-              Category -> Use a singleton pattern
-
-            */
-        Volley.newRequestQueue(getApplicationContext()).
-                add(request);
-
+                queue.add(request);
+            }
+        }).start();
     }
 
+    public void put(String first, String last, String ID){
+        new Thread(new Runnable() {
+            public void run() {
+                // Make new json object and put params in it
+                JSONObject jsonParams = new JSONObject();
+                try {
+                    jsonParams.put("id", Integer.parseInt(ID));
+                    jsonParams.put("forename", first);
+                    jsonParams.put("surname", last);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
+                System.out.println(jsonParams);
 
-    public void hideUsers(){
-        LinearLayout scroll = (LinearLayout) findViewById(R.id.viewUsers);
-        scroll.removeAllViews();
+                JsonObjectRequest request = new JsonObjectRequest(JsonRequest.Method.PUT, url+"/"+ID, jsonParams, new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        System.out.println(response);
+                    }
+                },
+
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                System.out.println(error.toString());
+                            }
+                        });
+
+                queue.add(request);
+            }
+        }).start();
+    }
+
+    public void delete(String ID){
+        new Thread(new Runnable() {
+            public void run() {
+                StringRequest request = new StringRequest(Request.Method.DELETE, url+"/"+ID, new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        System.out.println(response);
+                    }
+                },
+
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                System.out.println(error.toString());
+                            }
+                        });
+
+                queue.add(request);
+            }
+        }).start();
+    }
+
+    public void editUser(View view){
+        EditText fName = (EditText) findViewById(R.id.editUserName1);
+        EditText sName = (EditText) findViewById(R.id.editUserName2);
+        EditText ID = (EditText) findViewById(R.id.editUserID);
+
+        put(fName.getText().toString(), sName.getText().toString(), ID.getText().toString());
+        fName.getText().clear();
+        sName.getText().clear();
+        ID.getText().clear();
+    }
+
+    public void deleteUser(View view){
+        EditText ID = (EditText) findViewById(R.id.deleteUserID);
+
+        delete(ID.getText().toString());
+        ID.getText().clear();
     }
 
     public void addUser(View view){
@@ -164,6 +221,14 @@ public class MainActivity extends AppCompatActivity {
         EditText ID = (EditText) findViewById(R.id.AddUserID);
 
         post(fName.getText().toString(), sName.getText().toString(), ID.getText().toString());
+        fName.getText().clear();
+        sName.getText().clear();
+        ID.getText().clear();
+    }
+
+    public void hideUsers(){
+        LinearLayout scroll = (LinearLayout) findViewById(R.id.viewUsers);
+        scroll.removeAllViews();
     }
 
     public void showUsers(View view) {
