@@ -30,12 +30,13 @@ import org.json.*;
 
 
 public class MainActivity extends AppCompatActivity {
+
+
+    // Public variables to keep app wide data
+    boolean userVisible = false;
     RequestQueue queue;
     String url;
     String output;
-
-    // Public variables to keep app wide data
-    public boolean userVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,12 +48,15 @@ public class MainActivity extends AppCompatActivity {
         url = "http://web.socem.plymouth.ac.uk/COMP2000/api/Employees";
     }
 
+    // Get request to fill view user
     public void get(){
+        // Running in a new thread
         new Thread(new Runnable() {
             public void run() {
+                // Requesting a Json array from the API
                 JsonArrayRequest jsonObjectRequest = new JsonArrayRequest
                         (Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
-
+                            // Method to handle the response
                             @Override
                             public void onResponse(JSONArray response) {
                                 String ID = "";
@@ -60,9 +64,10 @@ public class MainActivity extends AppCompatActivity {
                                 String Forename = "";
 
 
+                                // Formatting users to be displayed
                                 LinearLayout scroll = (LinearLayout) findViewById(R.id.viewUsers);
                                 for (int i = 0; i < response.length(); i++) {
-                                    // Formatting user to be displayed
+                                    // Removing the extra characters
                                     try {
                                         String[] temp = response.get(i).toString().split(",");
                                         ID = temp[0].strip().replaceAll("[{\"}]", "");
@@ -72,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
                                         e.printStackTrace();
                                     }
 
-                                    // Displaying user
+                                    // Creating a new textview and adding the user text to it
                                     TextView temp = new TextView(getBaseContext());
                                     try {
                                         temp.setText(Surname.substring(0, 1).toUpperCase() + Surname.substring(1).toLowerCase() + " " +
@@ -83,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
                                     }
 
                                     // UI Section
+                                    // Adding the text view to the correct window in a UI safe method
                                     scroll.post(new Runnable() {
                                         public void run() {
                                             scroll.addView(temp);
@@ -102,7 +108,9 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
+    // HTTP post request
     public void post(String first, String last, String ID){
+        // Running in a new thread
         new Thread(new Runnable() {
             public void run() {
                 // Make new json object and put params in it
@@ -115,8 +123,7 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                System.out.println(jsonParams);
-
+                // Make the post request
                 JsonObjectRequest request = new JsonObjectRequest(JsonRequest.Method.POST, url, jsonParams, new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -136,7 +143,9 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
+    // HTTP put request
     public void put(String first, String last, String ID){
+        // Running in a new thread
         new Thread(new Runnable() {
             public void run() {
                 // Make new json object and put params in it
@@ -149,8 +158,7 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                System.out.println(jsonParams);
-
+                // Making the put request
                 JsonObjectRequest request = new JsonObjectRequest(JsonRequest.Method.PUT, url+"/"+ID, jsonParams, new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -170,9 +178,12 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
+    // HTTP Delete request
     public void delete(String ID){
+        // Running in a new thread
         new Thread(new Runnable() {
             public void run() {
+                // Making the delete request
                 StringRequest request = new StringRequest(Request.Method.DELETE, url+"/"+ID, new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -192,6 +203,7 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
+    // Creating a notification
     public void createNotification(View view) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "Admin App")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -204,11 +216,10 @@ public class MainActivity extends AppCompatActivity {
         notificationManager.notify(1, builder.build());
     }
 
-
+    // Creating a notification channel for notifications
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Admin App";
-            //String description = getString(R.string.channel_description);
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel("Admin App", name, importance);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
@@ -216,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Method to get the parameters for a put request when the accept button is pressed
     public void editUser(View view){
         EditText fName = (EditText) findViewById(R.id.editUserName1);
         EditText sName = (EditText) findViewById(R.id.editUserName2);
@@ -227,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
         ID.getText().clear();
     }
 
+    // Method to get the parameters for a delete request when the accept button is pressed
     public void deleteUser(View view){
         EditText ID = (EditText) findViewById(R.id.deleteUserID);
 
@@ -234,6 +247,7 @@ public class MainActivity extends AppCompatActivity {
         ID.getText().clear();
     }
 
+    // Method to get the parameters for a post request when the accept button is pressed
     public void addUser(View view){
         EditText fName = (EditText) findViewById(R.id.AddUserName1);
         EditText sName = (EditText) findViewById(R.id.AddUserName2);
@@ -245,11 +259,14 @@ public class MainActivity extends AppCompatActivity {
         ID.getText().clear();
     }
 
+    // Method to clear the view users window when the button is pressed for a second time
     public void hideUsers(){
         LinearLayout scroll = (LinearLayout) findViewById(R.id.viewUsers);
         scroll.removeAllViews();
     }
 
+    // Method to handle when the view users window should fill with users and when is should empty
+    // as the same button is used for both
     public void showUsers(View view) {
         if (userVisible){
             userVisible = false;
