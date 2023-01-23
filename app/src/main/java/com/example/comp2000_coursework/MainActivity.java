@@ -1,8 +1,13 @@
 package com.example.comp2000_coursework;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -20,34 +25,24 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 
 import org.json.*;
-import org.w3c.dom.Text;
 
-import java.lang.reflect.Array;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     RequestQueue queue;
     String url;
     String output;
-    Gson gson;
 
     // Public variables to keep app wide data
     public boolean userVisible = false;
 
-
-    public MainActivity(){
-         gson = new Gson();
-    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        createNotificationChannel();
         queue = Volley.newRequestQueue(this);
         url = "http://web.socem.plymouth.ac.uk/COMP2000/api/Employees";
     }
@@ -195,6 +190,30 @@ public class MainActivity extends AppCompatActivity {
                 queue.add(request);
             }
         }).start();
+    }
+
+    public void createNotification(View view) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "Admin App")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle("Holiday requested")
+                .setContentText("An employee has requested some holiday")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+        notificationManager.notify(1, builder.build());
+    }
+
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Admin App";
+            //String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel("Admin App", name, importance);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
     }
 
     public void editUser(View view){
